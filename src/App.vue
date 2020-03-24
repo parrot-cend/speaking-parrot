@@ -43,6 +43,7 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
 import axios from 'axios'
+import { loadExternalScript } from '@/utils/externalScript'
 
 @Component
 export default class App extends Vue {
@@ -55,6 +56,7 @@ export default class App extends Vue {
   private result = ''
   private mounted() {
     this.appendFormItem()
+    loadExternalScript('http://localhost:3000/node')
   }
   private appendFormItem() {
     const emptyFormItem = {
