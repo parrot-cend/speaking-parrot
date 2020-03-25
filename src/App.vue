@@ -1,51 +1,30 @@
 <template>
   <div id="app">
-    <div class="side">
-      <div style="display: inline-flex; flex-direction: column;">
-        <h5>Make some config:</h5>
-        <div>
-          <el-button type="primary" @click="appendFormItem">add</el-button>
-          <el-button type="primary" @click="submit">submit</el-button>
-        </div>
-        <el-form
-          inline
-          class="form"
-          size="small"
-          style="flex: 1"
-          label-width="120px"
-          v-for="(item, index) in form.queryForm.formItem"
-          :key="index"
-          :model="item"
-        >
-          <el-form-item label="tag">
-            <el-input v-model="item.tag" />
-          </el-form-item>
-          <el-form-item label="label">
-            <el-input v-model="item.label" />
-          </el-form-item>
-          <el-form-item label="model">
-            <el-input v-model="item.model" />
-          </el-form-item>
-          <el-form-item label="prop.type">
-            <el-input v-model="item.prop.type" />
-          </el-form-item>
-        </el-form>
-      </div>
-    </div>
-    <div class="side">
-      <div>
-        <h5>Result:</h5>
-        <pre><code v-text="result"></code></pre>
-      </div>
+    <Sidebar @select="onSidebarSelect" />
+    <div :class="['body', 'layout-' + layoutClass]">
+      <ElementTree class="tree" />
+      <Preview class="preview" />
     </div>
   </div>
 </template>
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
-import axios from 'axios'
-import { loadExternalScript } from '@/utils/externalScript'
+import Sidebar from './Sidebar.vue'
+import ElementTree from './ElementTree.vue'
+import Preview from './Preview.vue'
 
-@Component
+enum Layout {
+  Hor = 'horizontal',
+  Ver = 'vertical'
+}
+
+@Component({
+  components: {
+    Sidebar,
+    ElementTree,
+    Preview
+  }
+})
 export default class App extends Vue {
   private form = {
     queryForm: {
@@ -54,9 +33,15 @@ export default class App extends Vue {
     }
   }
   private result = ''
+  private layoutClass: Layout = Layout.Ver
   private mounted() {
     this.appendFormItem()
-    loadExternalScript('http://localhost:3000/node')
+    // loadExternalScript('http://localhost:3000/node')
+  }
+  private onSidebarSelect(path: Array<string>) {
+    if (path[0] === 'layout') {
+      this.layoutClass = path[1] as Layout
+    }
   }
   private appendFormItem() {
     const emptyFormItem = {
@@ -69,34 +54,35 @@ export default class App extends Vue {
     }
     this.$set(this.form.queryForm.formItem, this.form.queryForm.formItem.length, emptyFormItem)
   }
-  private submit() {
-    const param = this.form
-    axios.post('/template', { data: param }).then((res) => {
-      this.result = res.data
-    })
-  }
 }
 </script>
 <style>
+html {
+  height: 100%;
+}
+body {
+  height: 100%;
+  margin: 0;
+}
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  color: #2c3e50;
   display: flex;
+  height: 100%;
 }
-.side {
+.body {
   flex: 1;
-  display: inline-flex;
-  margin: 12px;
-  padding: 12px;
-  border: 1px solid #cccccc;
-  border-radius: 12px;
+  display: flex;
+  align-items: stretch;
+  transition: all 0.2s ease;
 }
-.form {
-  margin: 12px;
-  padding: 12px;
-  border: 1px solid #cccccc;
-  border-radius: 12px;
+.body.layout-horizontal {
+  flex-direction: row;
+}
+.body.layout-vertical {
+  flex-direction: column;
+}
+.tree,
+.preview {
+  flex: 1;
+  margin: 20px;
 }
 </style>
