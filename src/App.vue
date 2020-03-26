@@ -12,6 +12,7 @@ import { Component, Vue } from 'vue-property-decorator'
 import Sidebar from './Sidebar.vue'
 import ElementTree from './ElementTree.vue'
 import Preview from './Preview.vue'
+import { loadExternalScript } from './utils/externalScript'
 
 enum Layout {
   Hor = 'horizontal',
@@ -26,33 +27,10 @@ enum Layout {
   }
 })
 export default class App extends Vue {
-  private form = {
-    queryForm: {
-      formItem: [] as any[],
-      buttons: []
-    }
-  }
   private result = ''
   private layoutClass: Layout = Layout.Ver
-  private mounted() {
-    this.appendFormItem()
-    // loadExternalScript('http://localhost:3000/node')
-  }
-  private onSidebarSelect(path: Array<string>) {
-    if (path[0] === 'layout') {
-      this.layoutClass = path[1] as Layout
-    }
-  }
-  private appendFormItem() {
-    const emptyFormItem = {
-      tag: 'el-input',
-      model: 'value',
-      label: 'test',
-      prop: {
-        type: 'text'
-      }
-    }
-    this.$set(this.form.queryForm.formItem, this.form.queryForm.formItem.length, emptyFormItem)
+  private created() {
+    loadExternalScript('http://localhost:3000/node-utils')
   }
 }
 </script>
