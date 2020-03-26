@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
     "target": "es5",
-    "module": "esnext",
+    "module": "es2015",
     "strict": true,
-    "jsx": "preserve",
+    "jsx": "react",
     "jsxFactory": "h",
     "importHelpers": true,
     "moduleResolution": "node",

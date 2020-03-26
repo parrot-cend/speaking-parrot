@@ -8,7 +8,7 @@ export enum FormSize {
   Mini = 'mini'
 }
 
-export enum NodeType {
+export enum FormItemNodeType {
   Form = 'form',
   FormItem = 'form-item',
   Input = 'input',

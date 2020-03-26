@@ -1,4 +1,4 @@
-import { Dictionary, Node } from './types'
+import { Dictionary, FormItemNodeType, Node } from './types'
 export class Config {
   public readonly tag: string
   public readonly props: Dictionary<Node.Prop>
@@ -35,4 +35,19 @@ export class Config {
     }
     return this
   }
+}
+
+export function createConfig(
+  tag: string,
+  props?: Dictionary<Node.Prop>,
+  children?: Array<Config | string>
+): Config {
+  return new Config(tag, props, children)
+}
+
+export function createFormItem(type: FormItemNodeType): Config {
+  const formItem = new Config('el-form-item')
+  const children = new Config(`el-${type}`)
+  formItem.appendChild(children)
+  return formItem
 }

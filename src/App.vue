@@ -12,7 +12,6 @@ import { Component, Vue } from 'vue-property-decorator'
 import Sidebar from './Sidebar.vue'
 import ElementTree from './ElementTree.vue'
 import Preview from './Preview.vue'
-import { loadExternalScript } from './utils/externalScript'
 
 enum Layout {
   Hor = 'horizontal',
@@ -29,9 +28,8 @@ enum Layout {
 export default class App extends Vue {
   private result = ''
   private layoutClass: Layout = Layout.Ver
-  private created() {
-    loadExternalScript('http://localhost:3000/node-utils')
-  }
+
+  private onSidebarSelect() {}
 }
 </script>
 <style>
