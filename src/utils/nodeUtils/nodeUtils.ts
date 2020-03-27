@@ -1,21 +1,28 @@
-import { Dictionary, FormItemNodeType, Node } from './types'
+import { FormItemNodeType, Node } from './types'
 export class Config {
   public readonly tag: string
-  public readonly props: Dictionary<Node.Prop>
+  public readonly props: Array<Node.Prop>
   public readonly children: Array<Config | string>
-  constructor(tag: string, props?: Dictionary<Node.Prop>, children?: Array<Config | string>) {
+  constructor(tag: string, props?: Array<Node.Prop>, children?: Array<Config | string>) {
     this.tag = tag
-    this.props = props || {}
+    this.props = props || []
     this.children = children || []
   }
 
-  public addProp(key: string, type: Node.PropType, value: string): this {
-    const prop: Node.Prop = { type, value }
-    Object.assign(this.props, { [key]: prop })
+  public addProp(prop: Node.Prop): this {
+    this.props.push(prop)
     return this
   }
   public deleteProp(key: string): this {
-    delete this.props[key]
+    const idx = this.props.findIndex(prop => prop.key === key)
+    this.props.splice(idx, 1)
+    return this
+  }
+  public updateProp(key: string, value: string): this {
+    const target = this.props.find(prop => prop.key === key)
+    if (target) {
+      target.value = value
+    }
     return this
   }
   public appendChild(children: Config | string | Array<Config | string>): this {
@@ -37,11 +44,11 @@ export class Config {
   }
 }
 
-export function createConfig(
-  tag: string,
-  props?: Dictionary<Node.Prop>,
-  children?: Array<Config | string>
-): Config {
+export function createProp(key: string, type: Node.PropType, value: string): Node.Prop {
+  return { key, type, value }
+}
+
+export function createConfig(tag: string, props?: Array<Node.Prop>, children?: Array<Config | string>): Config {
   return new Config(tag, props, children)
 }
 

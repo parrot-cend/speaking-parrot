@@ -1,32 +1,80 @@
 <template>
   <el-card>
-    <div slot="header">元素树</div>
+    <b slot="header">Element</b>
     <el-tree
       :data="treeData"
       node-key="id"
       default-expand-all
-      @node-drag-start="handleDragStart"
-      @node-drag-enter="handleDragEnter"
-      @node-drag-leave="handleDragLeave"
-      @node-drag-over="handleDragOver"
-      @node-drag-end="handleDragEnd"
-      @node-drop="handleDrop"
+      :expand-on-click-node="false"
       draggable
       :allow-drop="allowDrop"
       :allow-drag="allowDrag"
     >
-      <span class="custom-tree-node" slot-scope="{ node, data }">
-        <span>{{ data.tag }}</span>
-        <span style="margin-left: 8px;">
-          <el-button size="mini" type="primary" icon="el-icon-edit" circle @click="editNode(node)" />
-          <el-button
-            size="mini"
-            type="primary"
-            icon="el-icon-document-add"
-            circle
-            @click="insertNode(node)"
+      <span class="tree-node" slot-scope="{ node, data }">
+        <span class="node-tag">{{ data.tag }}</span>
+        <span class="node-operation-wrapper" style="margin-left: 8px;">
+          <el-popover v-show="node.level > 1" placement="right" width="260">
+            <el-form
+              style="padding-top: 12px;"
+              size="mini"
+              :model="nodeDataCache"
+              label-width="60px"
+            >
+              <el-form-item label="Label: " required>
+                <el-input v-model="nodeDataCache.label" type="text" />
+              </el-form-item>
+              <el-form-item style="text-align: right;">
+                <el-button type="primary" @click="editNode(node, data)">Save</el-button>
+              </el-form-item>
+            </el-form>
+            <i
+              slot="reference"
+              class="node-operation el-icon-edit"
+              title="Edit"
+              @click="setNodeDataCache(data)"
+            />
+          </el-popover>
+          <el-popover placement="right" width="260">
+            <el-form
+              style="padding-top: 12px;"
+              size="mini"
+              :model="nodeDataCache"
+              label-width="60px"
+            >
+              <el-form-item label="Type: " required>
+                <el-select v-model="nodeDataCache.type" placeholder="Select Type">
+                  <el-option
+                    v-for="item in formItemTypes"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  ></el-option>
+                </el-select>
+              </el-form-item>
+              <el-form-item label="Label: ">
+                <el-input
+                  v-model="nodeDataCache.label"
+                  type="text"
+                  @keyup.enter.native="insertNode(data)"
+                />
+              </el-form-item>
+              <el-form-item style="text-align: right;">
+                <el-button type="primary" @click="insertNode(data)">Insert</el-button>
+              </el-form-item>
+            </el-form>
+            <i
+              slot="reference"
+              class="node-operation el-icon-document-add"
+              title="Insert"
+              @click="resetNodeDataCache"
+            />
+          </el-popover>
+          <i
+            v-show="node.level > 1"
+            class="node-operation el-icon-delete"
+            title="Delete"
+            @click="deleteNode(node, data)"
           />
-          <el-button size="mini" type="primary" icon="el-icon-delete" circle />
         </span>
       </span>
     </el-tree>
@@ -35,64 +83,109 @@
 <script lang="tsx">
 import { Component, Vue, Watch } from 'vue-property-decorator'
 import { CreateElement } from 'vue'
-import { Config, createConfig } from '@/utils/nodeUtils/nodeUtils'
+import { Config, createConfig, createProp } from '@/utils/nodeUtils/nodeUtils'
 import EventBus from './EventBus'
 import { EventType } from './utils/event'
+import { formItemTypes } from './utils/formItem'
+import { FormItemNodeType, Node } from './utils/nodeUtils/types'
+import { TreeNode } from 'element-ui/types/tree'
 
 let id: number = 1
+let currentDragLevel: number = -1
 
-interface TreeNode extends Config {
+interface TreeItem extends Config {
   readonly id: number
 }
 
 @Component
 export default class ElementTree extends Vue {
-  private treeData: TreeNode[] = []
+  private treeData: TreeItem[] = [
+    Object.assign(
+      createConfig('el-form', [createProp('style', Node.PropType.String, 'width: 100%;')]),
+      { id: id++ }
+    ) as TreeItem
+  ]
+  private nodeDataCache = {
+    label: '',
+    type: ''
+  }
+  private formItemTypes = formItemTypes
 
   @Watch('treeData', { deep: true, immediate: true })
-  private onTreeDataChanged(val: TreeNode[]) {
+  private onTreeDataChanged(val: TreeItem[]) {
     EventBus.$emit(EventType.TreeChange, this.treeData)
   }
-  mounted() {
-    this.insertNode()
-  }
-  private editNode(data: any) {
+  private editNode(data: TreeItem) {
     console.log(data)
   }
-  private insertNode() {
-    const node: TreeNode = { ...createConfig('el-form'), id: id++ } as TreeNode
-    this.treeData.push(node)
+  private setNodeDataCache(data: TreeItem) {
+    this.nodeDataCache.label = data.props.find((prop) => prop.key === 'label')?.value || ''
   }
-  private deleteNode(node: TreeNode, data: any) {
+  private resetNodeDataCache() {
+    this.nodeDataCache.label = ''
+  }
+  private insertNode(data: TreeItem) {
+    const label: string = this.nodeDataCache.label.trim()
+    const props: Node.Prop = createProp('label', Node.PropType.String, label)
+    const newNode: TreeItem = Object.assign(createConfig(`el-form-item`, [props]), {
+      id: id++
+    }) as TreeItem
+    switch (this.nodeDataCache.type) {
+      case FormItemNodeType.Input:
+        const inputNode = Object.assign(createConfig(`el-input`), {
+          id: id++
+        }) as TreeItem
+        newNode.appendChild(inputNode)
+        break
+      case FormItemNodeType.Select:
+        const selectNode = Object.assign(createConfig(`el-select`), {
+          id: id++
+        }) as TreeItem
+        const optionNode = Object.assign(createConfig(`el-option`), {
+          id: id++
+        }) as TreeItem
+        newNode.appendChild(selectNode.appendChild(optionNode))
+        break
+    }
+    data.children.push(newNode)
+  }
+  private deleteNode(node: TreeItem, data: any) {
     console.log(node, data)
   }
-  private handleDragStart(node: any, ev: any) {
-    console.log('drag start', node)
-  }
-  private handleDragEnter(draggingNode: any, dropNode: any, ev: any) {
-    console.log('tree drag enter: ', dropNode.label)
-  }
-  private handleDragLeave(draggingNode: any, dropNode: any, ev: any) {
-    console.log('tree drag leave: ', dropNode.label)
-  }
-  private handleDragOver(draggingNode: any, dropNode: any, ev: any) {
-    console.log('tree drag over: ', dropNode.label)
-  }
-  private handleDragEnd(draggingNode: any, dropNode: any, dropType: any, ev: any) {
-    console.log('tree drag end: ', dropNode && dropNode.label, dropType)
-  }
-  private handleDrop(draggingNode: any, dropNode: any, dropType: any, ev: any) {
-    console.log('tree drop: ', dropNode.label, dropType)
-  }
   private allowDrop(draggingNode: any, dropNode: any, type: any) {
-    if (dropNode.data.label === '二级 3-1') {
-      return type !== 'inner'
-    } else {
-      return true
-    }
+    return true
   }
-  private allowDrag(draggingNode: any) {
-    return draggingNode.data.label.indexOf('三级 3-2-2') === -1
+  private allowDrag(node: TreeNode<'tag', TreeItem>) {
+    return node.level !== 1
   }
 }
 </script>
+<style scoped>
+.tree-node {
+  width: 100%;
+}
+.node-operation {
+  display: none;
+  margin-left: 4px;
+  font-size: 16px;
+  transform: scale(1);
+  transition: all 0.2s ease;
+}
+.node-operation:hover {
+  font-size: 16px;
+  transform: scale(1.2);
+  color: #409eff;
+}
+.tree-node:hover .node-operation {
+  display: inline-block;
+}
+.node-tag {
+  display: inline-block;
+  width: 200px;
+}
+.node-operation-wrapper {
+  display: inline-block;
+  width: 100px;
+  text-align: right;
+}
+</style>

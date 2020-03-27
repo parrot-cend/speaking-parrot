@@ -12,6 +12,8 @@ export enum FormItemNodeType {
   Form = 'form',
   FormItem = 'form-item',
   Input = 'input',
+  Select = 'select',
+  Option = 'option',
   Button = 'button'
 }
 
@@ -21,13 +23,14 @@ export enum UIFramework {
 
 export namespace Node {
   export interface Prop<T extends string = string, V extends string = string> {
+    key: string
     type: T
     value: V
   }
   export type Config =
     | {
         tag: string
-        props?: Dictionary<Prop>
+        props?: Array<Prop>
         children?: Array<Config | string>
       }
     | string
@@ -109,7 +112,4 @@ export namespace Node {
   }
 }
 
-export interface SourceConfig extends Dictionary<Array<Node.Config>> {
-  query: Array<Node.Config>
-  plain: Array<Node.Config>
-}
+export type SourceConfig = Array<Node.Config>

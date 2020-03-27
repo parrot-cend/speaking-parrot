@@ -29,12 +29,19 @@ export default class App extends Vue {
   private result = ''
   private layoutClass: Layout = Layout.Ver
 
-  private onSidebarSelect() {}
+  private onSidebarSelect(path: string[]) {
+    const [type, command] = path
+    if (type === 'layout') {
+      this.layoutClass = command as Layout
+    }
+  }
 }
 </script>
 <style>
 html {
   height: 100%;
+  font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei',
+    '微软雅黑', Arial, sans-serif;
 }
 body {
   height: 100%;
