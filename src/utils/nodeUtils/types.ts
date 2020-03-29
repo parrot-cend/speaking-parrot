@@ -27,13 +27,11 @@ export namespace Node {
     type: T
     value: V
   }
-  export type Config =
-    | {
-        tag: string
-        props?: Array<Prop>
-        children?: Array<Config | string>
-      }
-    | string
+  export interface Config {
+    tag: string
+    props?: Array<Prop>
+    children?: Array<Config>
+  }
   export enum PropType {
     String = 'string',
     Boolean = 'boolean',

@@ -91,17 +91,21 @@ import { FormItemNodeType, Node } from './utils/nodeUtils/types'
 import { TreeNode } from 'element-ui/types/tree'
 
 let id: number = 1
-let currentDragLevel: number = -1
+let dragLevel: number = -1
 
 interface TreeItem extends Config {
   readonly id: number
+  children: Array<TreeItem>
 }
 
 @Component
 export default class ElementTree extends Vue {
   private treeData: TreeItem[] = [
     Object.assign(
-      createConfig('el-form', [createProp('style', Node.PropType.String, 'width: 100%;')]),
+      createConfig('el-form', [
+        createProp('style', Node.PropType.String, 'width: 100%;'),
+        createProp('label-width', Node.PropType.String, '120px')
+      ]),
       { id: id++ }
     ) as TreeItem
   ]
@@ -149,14 +153,31 @@ export default class ElementTree extends Vue {
     }
     data.children.push(newNode)
   }
-  private deleteNode(node: TreeItem, data: any) {
-    console.log(node, data)
+  private deleteNode(node: TreeNode<'tag', TreeItem>, data: TreeItem) {
+    if (node.parent) {
+      const idx = node.parent.data.children.findIndex((config) => config.id === data.id)
+      if (idx > -1) {
+        node.parent?.data.removeChild(idx)
+      }
+    }
   }
-  private allowDrop(draggingNode: any, dropNode: any, type: any) {
-    return true
+  private allowDrop(draggingNode: any, dropNode: any, type: string) {
+    switch (type) {
+      case 'prev':
+        return dropNode.level === dragLevel
+      case 'inner':
+        return dropNode.level + 1 === dragLevel
+      case 'next':
+        return dropNode.level === dragLevel
+    }
   }
   private allowDrag(node: TreeNode<'tag', TreeItem>) {
-    return node.level !== 1
+    if (node.level !== 1) {
+      dragLevel = node.level
+      return true
+    } else {
+      return false
+    }
   }
 }
 </script>

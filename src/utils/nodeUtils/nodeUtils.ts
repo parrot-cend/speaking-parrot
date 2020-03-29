@@ -2,8 +2,8 @@ import { FormItemNodeType, Node } from './types'
 export class Config {
   public readonly tag: string
   public readonly props: Array<Node.Prop>
-  public readonly children: Array<Config | string>
-  constructor(tag: string, props?: Array<Node.Prop>, children?: Array<Config | string>) {
+  public readonly children: Array<Config>
+  constructor(tag: string, props?: Array<Node.Prop>, children?: Array<Config>) {
     this.tag = tag
     this.props = props || []
     this.children = children || []
@@ -25,7 +25,7 @@ export class Config {
     }
     return this
   }
-  public appendChild(children: Config | string | Array<Config | string>): this {
+  public appendChild(children: Config | Array<Config>): this {
     if (Array.isArray(children)) {
       this.children.push(...children)
     } else {
@@ -48,7 +48,7 @@ export function createProp(key: string, type: Node.PropType, value: string): Nod
   return { key, type, value }
 }
 
-export function createConfig(tag: string, props?: Array<Node.Prop>, children?: Array<Config | string>): Config {
+export function createConfig(tag: string, props?: Array<Node.Prop>, children?: Array<Config>): Config {
   return new Config(tag, props, children)
 }
 
