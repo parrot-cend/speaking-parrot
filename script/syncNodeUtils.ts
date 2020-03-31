@@ -1,6 +1,6 @@
-const axios = require('axios')
-const fs = require('fs')
-const path = require('path')
+import axios from 'axios'
+import fs from 'fs'
+import path from 'path'
 
 axios.get('http://localhost:3000/node-utils').then((res: any) => {
   const targetDir = path.join(__dirname, '..', 'src', 'utils', 'nodeUtils/')
