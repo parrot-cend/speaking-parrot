@@ -1,23 +1,19 @@
-# parrot-element-compiler-client
+# speaking-parrot
 
-## Project setup
+Client side of Vue template generator. Enpower PM to produce real source code!
 
-```
-npm install
-```
+For PM, For Front-End programmer.
 
-### Compiles and hot-reloads for development
+## Roadmap
 
-```
-npm run serve
-```
+1. Support more common form element like `radio`, `checkbox` etc.
+2. Support custom components. Not only `Element-UI` element.
+3. Support override inner style.
+4. Link config template with specific account or project.
 
-### Compiles and minifies for production
+## NPM Scripts
 
-```
-npm run build
-```
-
-### TODO
-
-生成节点的方法不再从前端定义, 而是初始化时从后端拉取 js 文件使用. 这样当后端核心代码发生变动时前端只需要变更视图实现即可.
+- "serve": develop
+- "build": build
+- "lint": DO NOT USE IT
+- "sync-utils": Get VNode class and types from server side synchronously. (need run server at port 3000)
