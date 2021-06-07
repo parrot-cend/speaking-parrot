@@ -9,7 +9,7 @@
     "sync-utils": "ts-node script/syncNodeUtils.ts"
   },
   "dependencies": {
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "element-ui": "^2.13.0",
     "vue": "^2.6.11",
     "vue-router": "^3.1.5",
